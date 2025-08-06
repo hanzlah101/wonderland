@@ -1,27 +1,29 @@
 import { cn } from "@/lib/utils"
-import { LoaderIcon, type LucideProps } from "lucide-react"
 import { cva, type VariantProps } from "class-variance-authority"
 
-const spinnerVariants = cva("shrink-0 animate-spin", {
-  variants: {
-    size: {
-      default: "size-4",
-      md: "size-5",
-      lg: "size-6"
+const spinnerVariants = cva(
+  "animation-duration-500 shrink-0 animate-spin rounded-full border-2 border-current/20 border-t-current",
+  {
+    variants: {
+      size: {
+        default: "size-4",
+        md: "size-5",
+        lg: "size-6"
+      }
+    },
+    defaultVariants: {
+      size: "default"
     }
-  },
-  defaultVariants: {
-    size: "default"
   }
-})
+)
 
 function Spinner({
   className,
   size,
   ...props
-}: LucideProps & VariantProps<typeof spinnerVariants>) {
+}: React.ComponentProps<"span"> & VariantProps<typeof spinnerVariants>) {
   return (
-    <LoaderIcon
+    <span
       data-slot="spinner"
       className={cn(spinnerVariants({ size, className }))}
       {...props}

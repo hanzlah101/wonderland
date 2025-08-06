@@ -3,11 +3,12 @@ import { toast } from "sonner"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useQueryClient } from "@tanstack/react-query"
-import { signInWithEmailAndPassword } from "firebase/auth"
+import { signInWithEmailAndPassword, signOut } from "firebase/auth"
 import { auth } from "@/lib/firebase"
 import { getErrorMessage } from "@/lib/firebase-errors"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
+import { getIsAdmin } from "@/lib/auth"
 import {
   Form,
   FormControl,
@@ -39,6 +40,15 @@ export function LoginForm() {
         values.email,
         values.password
       )
+
+      const isAdmin = await getIsAdmin(user.uid)
+      if (!isAdmin) {
+        await signOut(auth)
+        toast.error("Access denied. Admins only.")
+        form.reset()
+        return
+      }
+
       queryClient.setQueryData(["session"], user)
       form.reset()
       toast.success("Successfully logged in!")

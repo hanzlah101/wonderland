@@ -12,6 +12,9 @@
       },
       "suspicious": {
         "noArrayIndexKey": "off"
+      },
+      "style": {
+        "useBlockStatements": "off"
       }
     }
   },
