@@ -1,0 +1,11 @@
+#!/bin/sh
+. "$(dirname "$0")/_/husky.sh"
+
+# Run react-router type generation
+bunx react-router typegen
+
+# Run TypeScript type checking
+bunx tsc
+
+# Format with ultracite
+bunx ultracite format
