@@ -5,6 +5,13 @@
     "rules": {
       "nursery": {
         "noUnknownAtRule": "off"
+      },
+      "performance": {
+        "noImgElement": "off",
+        "noNamespaceImport": "off"
+      },
+      "suspicious": {
+        "noArrayIndexKey": "off"
       }
     }
   },
