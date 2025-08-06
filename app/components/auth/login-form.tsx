@@ -1,4 +1,4 @@
-import { z } from "zod"
+import { z } from "zod/mini"
 import { toast } from "sonner"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -8,7 +8,6 @@ import { auth } from "@/lib/firebase"
 import { getErrorMessage } from "@/lib/firebase-errors"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { getIsAdmin } from "@/lib/auth"
 import {
   Form,
   FormControl,
@@ -19,8 +18,13 @@ import {
 } from "@/components/ui/form"
 
 const formSchema = z.object({
-  email: z.email(),
-  password: z.string().min(1, " Password is required")
+  email: z
+    .string()
+    .check(
+      z.minLength(1, "Email is required"),
+      z.email("Invalid email address")
+    ),
+  password: z.string().check(z.minLength(1, "Password is required"))
 })
 
 export function LoginForm() {
@@ -41,8 +45,8 @@ export function LoginForm() {
         values.password
       )
 
-      const isAdmin = await getIsAdmin(user.uid)
-      if (!isAdmin) {
+      const { claims } = await user.getIdTokenResult()
+      if (claims.role !== "admin") {
         await signOut(auth)
         toast.error("Access denied. Admins only.")
         form.reset()

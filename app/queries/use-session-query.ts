@@ -1,9 +1,7 @@
 import { useEffect } from "react"
 import { onAuthStateChanged, type User } from "firebase/auth"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
-import { auth, db } from "@/lib/firebase"
-import { getIsAdmin } from "@/lib/auth"
-import { onValue, ref } from "firebase/database"
+import { auth } from "@/lib/firebase"
 
 export function useSessionQuery() {
   const queryClient = useQueryClient()
@@ -16,8 +14,8 @@ export function useSessionQuery() {
         const unsubscribe = onAuthStateChanged(auth, async (user) => {
           unsubscribe()
           if (!user) return resolve(null)
-          const isAdmin = await getIsAdmin(user.uid)
-          resolve(isAdmin ? user : null)
+          const { claims } = await user.getIdTokenResult()
+          resolve(claims.role === "admin" ? user : null)
         })
       })
     },
@@ -32,29 +30,15 @@ export function useSessionQuery() {
         return
       }
 
-      const isAdmin = await getIsAdmin(user.uid)
-      queryClient.setQueryData(["session"], isAdmin ? user : null)
-    })
-
-    return unsubscribe
-  }, [queryClient])
-
-  // Sync role changes in real-time
-  useEffect(() => {
-    const user = auth.currentUser
-    if (!user) return
-
-    const roleRef = ref(db, `users/${user.uid}/role`)
-    const unsubscribe = onValue(roleRef, (snap) => {
-      const role = snap.val()
-      queryClient.setQueryData(["session"], role === "admin" ? user : null)
+      const { claims } = await user.getIdTokenResult()
+      queryClient.setQueryData(
+        ["session"],
+        claims.role === "admin" ? user : null
+      )
     })
 
     return () => unsubscribe()
   }, [queryClient])
 
-  return {
-    user: data,
-    isLoading
-  }
+  return { user: data as NonNullable<typeof data>, isLoading }
 }
