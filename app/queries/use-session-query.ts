@@ -11,11 +11,9 @@ export function useSessionQuery() {
     initialData: auth.currentUser ?? undefined,
     queryFn: () => {
       return new Promise((resolve) => {
-        const unsubscribe = onAuthStateChanged(auth, async (user) => {
+        const unsubscribe = onAuthStateChanged(auth, (user) => {
           unsubscribe()
-          if (!user) return resolve(null)
-          const { claims } = await user.getIdTokenResult()
-          resolve(claims.role === "admin" ? user : null)
+          resolve(user)
         })
       })
     },
@@ -24,17 +22,8 @@ export function useSessionQuery() {
 
   // Keep the session synced
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      if (!user) {
-        queryClient.setQueryData(["session"], null)
-        return
-      }
-
-      const { claims } = await user.getIdTokenResult()
-      queryClient.setQueryData(
-        ["session"],
-        claims.role === "admin" ? user : null
-      )
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      queryClient.setQueryData(["session"], user ?? null)
     })
 
     return () => unsubscribe()

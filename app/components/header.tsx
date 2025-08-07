@@ -1,8 +1,6 @@
 import { Logo } from "@/components/logo"
 import { ModeToggle } from "@/components/mode-toggle"
-import { Button } from "@/components/ui/button"
-import { PlusIcon } from "lucide-react"
-import { Link } from "react-router"
+import { UserMenu } from "@/components/user-menu"
 
 export function Header() {
   return (
@@ -10,12 +8,7 @@ export function Header() {
       <Logo />
       <div className="flex items-center gap-3">
         <ModeToggle />
-        <Button asChild size="sm">
-          <Link to="/create-playlist">
-            <PlusIcon />
-            New Playlist
-          </Link>
-        </Button>
+        <UserMenu />
       </div>
     </header>
   )

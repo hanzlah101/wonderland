@@ -11,7 +11,8 @@
         "noNamespaceImport": "off"
       },
       "suspicious": {
-        "noArrayIndexKey": "off"
+        "noArrayIndexKey": "off",
+        "noConsole": "off"
       },
       "style": {
         "useBlockStatements": "off"
