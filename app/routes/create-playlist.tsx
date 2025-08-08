@@ -1,4 +1,5 @@
 import type { Route } from "./+types/create-playlist"
+import { PlaylistsUpload } from "@/components/playlists-upload"
 
 export function meta(_: Route.MetaArgs) {
   return [
@@ -8,5 +9,5 @@ export function meta(_: Route.MetaArgs) {
 }
 
 export default function CreatePlaylist() {
-  return <div />
+  return <PlaylistsUpload />
 }

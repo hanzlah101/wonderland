@@ -1,10 +1,8 @@
 import type { Route } from "./+types/home"
 import { Button } from "@/components/ui/button"
-import { signOut } from "firebase/auth"
-import { auth } from "@/lib/firebase"
-import { useQueryClient } from "@tanstack/react-query"
 import { Link } from "react-router"
 import { PlusIcon } from "lucide-react"
+import { AudioGrid } from "@/components/audio-grid"
 
 export function meta(_: Route.MetaArgs) {
   return [
@@ -14,18 +12,9 @@ export function meta(_: Route.MetaArgs) {
 }
 
 export default function Home() {
-  const queryClient = useQueryClient()
-
   return (
     <>
-      <Button
-        onClick={async () => {
-          await signOut(auth)
-          queryClient.setQueryData(["session"], null)
-        }}
-      >
-        Sign Out
-      </Button>
+      <AudioGrid />
       <Button
         asChild
         size="icon"
