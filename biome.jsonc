@@ -1,10 +1,30 @@
 {
   "$schema": "https://biomejs.dev/schemas/2.1.2/schema.json",
   "extends": ["ultracite"],
+  "linter": {
+    "rules": {
+      "nursery": {
+        "noUnknownAtRule": "off",
+        "noAwaitInLoop": "off"
+      },
+      "performance": {
+        "noImgElement": "off",
+        "noNamespaceImport": "off"
+      },
+      "suspicious": {
+        "noArrayIndexKey": "off",
+        "noConsole": "off"
+      },
+      "style": {
+        "useBlockStatements": "off"
+      }
+    }
+  },
   "assist": {
     "actions": {
       "source": {
-        "organizeImports": "off"
+        "organizeImports": "off",
+        "useSortedAttributes": "off"
       }
     }
   },
