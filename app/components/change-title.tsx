@@ -74,7 +74,7 @@ export function ChangeTitle({
         type="button"
         variant="link"
         title={title}
-        onClick={() => setIsEditing}
+        onClick={() => setIsEditing(true)}
         onKeyDown={onKeyDownView}
         className={cn("truncate p-0", className)}
         aria-label={`Edit title: ${title}`}
