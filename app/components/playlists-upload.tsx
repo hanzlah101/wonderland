@@ -50,14 +50,11 @@ function UploadPreviewItem({
         <p className="font-medium" title={folder}>
           {folder}
         </p>
-        {isFailed ? (
+        <Progress value={progress} />
+        {isFailed && (
           <p className="text-destructive text-sm" aria-live="polite">
             {error || "Upload failed"}
           </p>
-        ) : (
-          <div className="flex h-5 w-full items-center justify-center">
-            <Progress value={progress} />
-          </div>
         )}
       </div>
     </div>
