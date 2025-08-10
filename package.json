@@ -9,7 +9,8 @@
     "typecheck": "react-router typegen && tsc",
     "format": "ultracite format",
     "lint": "ultracite lint",
-    "prepare": "husky install"
+    "prepare": "husky install",
+    "deploy": "bun run build && firebase deploy"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.1",
