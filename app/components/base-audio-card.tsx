@@ -5,7 +5,7 @@ import { DeleteAudio } from "@/components/delete-audio"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { cn } from "@/lib/utils"
-import type { BaseAudioFile } from "@/queries/use-base-audio-files"
+import type { BaseAudioFile } from "@/queries/use-base-audio-files-query"
 import { useBaseAudioStore } from "@/stores/use-base-audio-store"
 
 export function BaseAudioCard(file: BaseAudioFile) {

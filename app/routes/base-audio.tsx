@@ -2,7 +2,7 @@ import { useEffect } from "react"
 import { BaseAudioCard } from "@/components/base-audio-card"
 import { Card, CardContent } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
-import { useBaseAudioFilesQuery } from "@/queries/use-base-audio-files"
+import { useBaseAudioFilesQuery } from "@/queries/use-base-audio-files-query"
 import { useBaseAudioStore } from "@/stores/use-base-audio-store"
 import type { Route } from "./+types/base-audio"
 
