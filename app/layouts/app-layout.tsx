@@ -23,9 +23,9 @@ export default function AppLayout() {
   return (
     <SidebarProvider>
       <AppSidebar />
-      <SidebarInset className="container mx-auto px-4">
+      <SidebarInset className="container mx-auto min-h-svh px-6">
         <Header />
-        <main className="py-6">
+        <main className="flex-1 py-4">
           <Outlet />
         </main>
       </SidebarInset>

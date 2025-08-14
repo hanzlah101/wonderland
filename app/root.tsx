@@ -1,6 +1,8 @@
 import "./app.css"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { ThemeProvider } from "next-themes"
+import { Toaster } from "@/components/ui/sonner"
+import type { Route } from "./+types/root"
 import {
   isRouteErrorResponse,
   Links,
@@ -9,8 +11,6 @@ import {
   Scripts,
   ScrollRestoration
 } from "react-router"
-import { Toaster } from "@/components/ui/sonner"
-import type { Route } from "./+types/root"
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -31,6 +31,10 @@ export const links: Route.LinksFunction = () => [
   {
     rel: "stylesheet",
     href: "https://fonts.googleapis.com/css2?family=Work+Sans:ital,wght@0,100..900;1,100..900&display=swap"
+  },
+  {
+    rel: "stylesheet",
+    href: "https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400..800;1,400..800&display=swap"
   }
 ]
 

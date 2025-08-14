@@ -1,18 +1,22 @@
+import slugify from "slugify"
+import { toast } from "sonner"
+import { useCallback, useState } from "react"
+import { db, storage } from "@/lib/firebase"
 import { ref as dbRef, get, set } from "firebase/database"
+import { DB_PATH, STORAGE_PATH, MAX_FOLDERS, MIME_TYPES } from "@/lib/constants"
+import { type DropzoneOptions } from "react-dropzone"
+import { type BaseAudioFile } from "@/queries/use-base-audio-files-query"
 import {
   getDownloadURL,
   ref as storageRef,
   uploadBytesResumable
 } from "firebase/storage"
-import { useCallback, useState } from "react"
-import type { DropzoneOptions } from "react-dropzone"
-import { toast } from "sonner"
-import { db, storage } from "@/lib/firebase"
 
 type OnDrop = NonNullable<DropzoneOptions["onDrop"]>
 
 type MediaUpload = {
-  folder: string
+  id: string // Unique identifier for the upload
+  folder: string // Original folder name for display
   audio: File
   video: File
   progress: number
@@ -23,39 +27,74 @@ type MediaUpload = {
   error?: string | null
 }
 
+// Extended type for uploads during processing that includes temporary files
+type MediaUploadWithFiles = MediaUpload & {
+  _files: FileEntry[]
+}
+
 type FileEntry = {
   name: string
   file: File
   isDirectory: boolean
 }
 
-// Constants
-const AUDIO_MIME_TYPES = [
-  "audio/mpeg",
-  "audio/wav",
-  "audio/mp3",
-  "audio/ogg",
-  "audio/m4a"
-]
-const VIDEO_MIME_TYPES = [
-  "video/mp4",
-  "video/webm",
-  "video/ogg",
-  "video/mov",
-  "video/avi",
-  "video/quicktime"
-]
-const MAX_FOLDERS = 10
-const MAX_FILE_SIZE = 100 * 1024 * 1024 // 100MB
+// Generate unique ID for uploads from title
+function generateUniqueId(title: string) {
+  const slug = slugify(title, {
+    lower: true,
+    strict: true,
+    trim: true,
+    remove: /[*+~.()'"!:@]/g
+  })
+  const randomSuffix = Math.random().toString(36).substring(2, 8)
+  return `${slug}-${randomSuffix}-${Date.now()}`
+}
+
+// Check if title already exists in database
+async function checkTitleExists(title: string) {
+  try {
+    const snapshot = await get(dbRef(db, DB_PATH))
+    if (!snapshot.exists()) return false
+
+    const data = snapshot.val() as Record<string, BaseAudioFile>
+    return Object.values(data).some(
+      (item) => item?.title?.toLowerCase() === title.toLowerCase()
+    )
+  } catch {
+    return false
+  }
+}
+
+// Generate unique ID that doesn't exist in database
+async function generateUniqueIdSafe(title: string) {
+  let attempts = 0
+  const maxAttempts = 10
+
+  while (attempts < maxAttempts) {
+    const id = generateUniqueId(title)
+
+    try {
+      const nodeRef = dbRef(db, `${DB_PATH}/${id}`)
+      const snap = await get(nodeRef)
+      if (!snap.exists()) {
+        return id
+      }
+    } catch {
+      // If we can't check, return the generated ID
+      return id
+    }
+
+    attempts++
+  }
+
+  // Fallback with timestamp if all attempts failed
+  return `${generateUniqueId(title)}-${Date.now()}`
+}
 
 // Utils
 function getFileExtension(fileName: string) {
   const lastDot = fileName.lastIndexOf(".")
   return lastDot !== -1 ? fileName.slice(lastDot) : ""
-}
-
-function isValidFileSize(file: File) {
-  return file.size <= MAX_FILE_SIZE
 }
 
 function getTopFolderFromPath(path: string) {
@@ -64,7 +103,7 @@ function getTopFolderFromPath(path: string) {
 }
 
 // Duration of an audio File (seconds)
-function getAudioDuration(file: File): Promise<number> {
+function getAudioDuration(file: File) {
   return new Promise((resolve, reject) => {
     const audioEl = document.createElement("audio")
     audioEl.preload = "metadata"
@@ -116,13 +155,7 @@ async function traverseEntry(entry: FileSystemEntry) {
     const file = await new Promise<File>((resolve, reject) => {
       fileEntry.file(resolve, reject)
     })
-    if (isValidFileSize(file)) {
-      files.push({ name: entry.name, file, isDirectory: false })
-    } else {
-      toast.error(
-        `File "${entry.name}" exceeds ${Math.floor(MAX_FILE_SIZE / 1024 / 1024)}MB`
-      )
-    }
+    files.push({ name: entry.name, file, isDirectory: false })
     return files
   }
 
@@ -246,53 +279,69 @@ async function getFolderMapFromEvent(event?: unknown, accepted?: File[]) {
   return {}
 }
 
-// Validation
-function validateFolderContents(folderName: string, files: FileEntry[]) {
-  const audioFiles = files.filter((x) => AUDIO_MIME_TYPES.includes(x.file.type))
-  const videoFiles = files.filter((x) => VIDEO_MIME_TYPES.includes(x.file.type))
+// Validation - returns error message or validated files
+function validateFolderContents(
+  _folderName: string,
+  files: FileEntry[]
+): string | { audio: File; video: File } {
+  const audioFiles = files.filter((x) => MIME_TYPES.AUDIO.includes(x.file.type))
+  const videoFiles = files.filter((x) => MIME_TYPES.VIDEO.includes(x.file.type))
 
-  if (audioFiles.length !== 1) {
-    toast.error(
-      `Folder "${folderName}" must contain exactly one audio file (found ${audioFiles.length})`
-    )
-    return null
+  if (audioFiles.length === 0 && videoFiles.length === 0) {
+    return "Missing audio & video file"
   }
-  if (videoFiles.length !== 1) {
-    toast.error(
-      `Folder "${folderName}" must contain exactly one video file (found ${videoFiles.length})`
-    )
-    return null
+  if (audioFiles.length === 0) {
+    return "Missing audio file"
+  }
+  if (audioFiles.length > 1) {
+    return "Too many audio files"
+  }
+  if (videoFiles.length === 0) {
+    return "Missing video file"
+  }
+  if (videoFiles.length > 1) {
+    return "Too many video files"
   }
 
   return { audio: audioFiles[0].file, video: videoFiles[0].file }
 }
 
-function validateDroppedFolders(folderMap: Record<string, FileEntry[]>) {
+// Create uploads immediately without validation
+function createUploadsFromFolders(
+  folderMap: Record<string, FileEntry[]>
+): MediaUploadWithFiles[] {
   const names = Object.keys(folderMap)
+
   if (names.length > MAX_FOLDERS) {
-    toast.error(
-      `Too many folders dropped (${names.length}). Max: ${MAX_FOLDERS}`
-    )
+    toast.error(`Too many folders (max ${MAX_FOLDERS})`)
     return []
   }
   if (names.length === 0) {
-    toast.error("Please drop folders, not individual files")
+    toast.error("Drop folders, not files")
     return []
   }
 
-  const uploads: MediaUpload[] = []
+  const uploads: MediaUploadWithFiles[] = []
+
   for (const name of names) {
     const files = folderMap[name]
-    const validated = validateFolderContents(name, files)
-    if (validated) {
-      uploads.push({
-        folder: name,
-        audio: validated.audio,
-        video: validated.video,
-        progress: 0,
-        status: "pending"
-      })
-    }
+    const id = generateUniqueId(name) // Generate ID immediately
+
+    // Create upload entry immediately, we'll validate later
+    // Use placeholder files that will be replaced during validation
+    const placeholderFile = new File([], "placeholder")
+
+    uploads.push({
+      id,
+      folder: name,
+      audio: placeholderFile, // Temporary, will be validated later
+      video: placeholderFile, // Temporary, will be validated later
+      progress: 0,
+      status: "pending",
+      posterUrl: null,
+      error: null,
+      _files: files
+    })
   }
 
   return uploads
@@ -374,32 +423,78 @@ async function generateVideoThumbnail(file: File): Promise<string> {
 }
 
 async function processFolderUpload(
-  upload: MediaUpload,
+  upload: MediaUploadWithFiles,
   index: number,
   setMediaUploads: React.Dispatch<React.SetStateAction<MediaUpload[]>>
 ) {
-  // Check for duplicate by folder key before starting uploads
+  // Step 1: Validate folder contents
+  const validation = validateFolderContents(upload.folder, upload._files)
+  if (typeof validation === "string") {
+    // Validation failed - set error and stop
+    setMediaUploads((prev) =>
+      prev.map((x, i) =>
+        i === index
+          ? {
+              ...x,
+              status: "failed",
+              progress: 0,
+              error: validation
+            }
+          : x
+      )
+    )
+    return
+  }
+
+  // Update with correct audio/video files
+  setMediaUploads((prev) =>
+    prev.map((x, i) =>
+      i === index
+        ? {
+            ...x,
+            audio: validation.audio,
+            video: validation.video
+          }
+        : x
+    )
+  )
+
+  // Update local reference
+  upload.audio = validation.audio
+  upload.video = validation.video
+
+  // Step 2: Check for title duplicates
+  const titleExists = await checkTitleExists(upload.folder)
+  if (titleExists) {
+    setMediaUploads((prev) =>
+      prev.map((x, i) =>
+        i === index
+          ? {
+              ...x,
+              status: "failed",
+              progress: 0,
+              error: "Title already exists"
+            }
+          : x
+      )
+    )
+    return
+  }
+
+  // Step 3: Check for ID collision and regenerate if needed
+  let finalId = upload.id
   try {
-    const nodeRef = dbRef(db, `audio-metadata/files/${upload.folder}`)
+    const nodeRef = dbRef(db, `${DB_PATH}/${finalId}`)
     const snap = await get(nodeRef)
     if (snap.exists()) {
+      // Regenerate ID if collision detected
+      finalId = await generateUniqueIdSafe(upload.folder)
       setMediaUploads((prev) =>
-        prev.map((x, i) =>
-          i === index
-            ? {
-                ...x,
-                status: "failed",
-                progress: 0,
-                error: "A record for this folder already exists."
-              }
-            : x
-        )
+        prev.map((x, i) => (i === index ? { ...x, id: finalId } : x))
       )
-      toast.error(`Folder "${upload.folder}" already exists`)
-      return
     }
   } catch {
-    // If we cannot check existence, proceed; upload path write will still fail if rules prevent overwrite.
+    // If we cannot check existence, proceed with current ID
   }
 
   setMediaUploads((prev) =>
@@ -411,16 +506,16 @@ async function processFolderUpload(
   try {
     const audioExt = getFileExtension(upload.audio.name)
     const videoExt = getFileExtension(upload.video.name)
-    const audioPath = `base-audio/${upload.folder}/audio${audioExt}`
-    const videoPath = `base-audio/${upload.folder}/video${videoExt}`
-    const posterPath = `base-audio/${upload.folder}/poster.jpg`
+    const audioPath = `${STORAGE_PATH}/${finalId}/audio${audioExt}`
+    const videoPath = `${STORAGE_PATH}/${finalId}/video${videoExt}`
+    const posterPath = `${STORAGE_PATH}/${finalId}/poster.jpg`
 
     let audioPct = 0
     let videoPct = 0
     let posterPct = 0
     const update = () => {
       const combined = Math.round((audioPct + videoPct + posterPct) / 3)
-      // Cap upload progress at 90% until metadata is successfully saved
+      // Cap upload progress until metadata is successfully saved
       const capped = Math.min(90, combined)
       setMediaUploads((prev) =>
         prev.map((x, i) => (i === index ? { ...x, progress: capped } : x))
@@ -448,17 +543,20 @@ async function processFolderUpload(
     // Save metadata in Realtime DB (final 10%)
     let metadataSaved = false
     try {
-      const nodeRef = dbRef(db, `audio-metadata/files/${upload.folder}`)
+      const nodeRef = dbRef(db, `${DB_PATH}/${finalId}`)
       await set(nodeRef, {
+        id: finalId,
         title: upload.folder,
+        originalFolderName: upload.folder,
         audioUrl,
         clipUrl,
         posterUrl,
-        duration: durationSeconds
+        duration: durationSeconds,
+        createdAt: Date.now()
       })
       metadataSaved = true
     } catch {
-      toast.error("Failed to save metadata for uploaded files")
+      toast.error("Failed to save metadata")
     }
 
     if (metadataSaved) {
@@ -471,8 +569,6 @@ async function processFolderUpload(
         )
       })
       if (toRevoke) URL.revokeObjectURL(toRevoke)
-
-      toast.success(`Uploaded folder "${upload.folder}"`)
     } else {
       setMediaUploads((prev) =>
         prev.map((x, i) =>
@@ -481,7 +577,7 @@ async function processFolderUpload(
                 ...x,
                 status: "failed",
                 progress: 90,
-                error: "Failed to save metadata."
+                error: "Save failed"
               }
             : x
         )
@@ -494,12 +590,31 @@ async function processFolderUpload(
         i === index ? { ...x, status: "failed", error: message } : x
       )
     )
-    toast.error(`Upload failed for "${upload.folder}": ${message}`)
   }
 }
 
 export function useBaseAudioUpload() {
   const [mediaUploads, setMediaUploads] = useState<MediaUpload[]>([])
+
+  // Check if all uploads are resolved (either completed or failed)
+  const allResolved =
+    mediaUploads.length > 0 &&
+    mediaUploads.every(
+      (upload) => upload.status === "completed" || upload.status === "failed"
+    )
+
+  // Clear uploads only if all are resolved
+  const clearUploads = useCallback(() => {
+    if (allResolved) {
+      // Revoke any remaining poster URLs to prevent memory leaks
+      mediaUploads.forEach((upload) => {
+        if (upload.posterUrl) {
+          URL.revokeObjectURL(upload.posterUrl)
+        }
+      })
+      setMediaUploads([])
+    }
+  }, [allResolved, mediaUploads])
 
   const onDrop: OnDrop = useCallback(
     async (acceptedFiles, fileRejections, event) => {
@@ -511,29 +626,36 @@ export function useBaseAudioUpload() {
 
       try {
         const folderMap = await getFolderMapFromEvent(event, acceptedFiles)
-        const uploads = validateDroppedFolders(folderMap)
+        const uploads = createUploadsFromFolders(folderMap)
         if (uploads.length === 0) return
 
-        // Initialize state and kick off thumbnail generation ASAP
-        setMediaUploads(
-          uploads.map((u) => ({ ...u, posterUrl: null, error: null }))
-        )
+        // INSTANTLY set uploads to state - no validation yet
+        setMediaUploads(uploads)
 
-        const thumbPromises = uploads.map((u, i) =>
-          generateVideoThumbnail(u.video)
-            .then((url) => {
+        // Start thumbnail generation for valid video files
+        const thumbPromises = uploads.map(async (u, i) => {
+          // Only generate thumbnail if we have files to work with
+          const files = u._files
+          const videoFiles = files.filter((x) =>
+            MIME_TYPES.VIDEO.includes(x.file.type)
+          )
+
+          if (videoFiles.length === 1) {
+            try {
+              const url = await generateVideoThumbnail(videoFiles[0].file)
               setMediaUploads((prev) =>
                 prev.map((x, j) => (j === i ? { ...x, posterUrl: url } : x))
               )
-            })
-            .catch(() => {
+            } catch {
               // Ignore thumbnail errors
-            })
-        )
+            }
+          }
+        })
+
         // Fire-and-forget thumbnail creation
         Promise.allSettled(thumbPromises)
 
-        // Start uploads in parallel
+        // Start upload processing in parallel (validation happens inside)
         const tasks = uploads.map((u, i) =>
           processFolderUpload(u, i, setMediaUploads).catch(() => {
             // Errors are handled inside
@@ -541,11 +663,16 @@ export function useBaseAudioUpload() {
         )
         await Promise.allSettled(tasks)
       } catch {
-        toast.error("Error processing dropped folders")
+        toast.error("Processing failed")
       }
     },
     []
   )
 
-  return { onDrop, mediaUploads }
+  return {
+    onDrop,
+    mediaUploads,
+    allResolved,
+    clearUploads
+  }
 }

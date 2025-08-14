@@ -4,5 +4,6 @@
   "jsxSingleQuote": false,
   "trailingComma": "none",
   "plugins": ["prettier-plugin-tailwindcss"],
-  "tailwindStylesheet": "./app/app.css"
+  "tailwindStylesheet": "./app/app.css",
+  "tailwindFunctions": ["cva", "clsx"]
 }

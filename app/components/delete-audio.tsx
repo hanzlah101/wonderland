@@ -8,6 +8,7 @@ import { deleteObject, ref as storageRef } from "firebase/storage"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { ref as dbRef, remove } from "firebase/database"
 import { type BaseAudioFile } from "@/queries/use-base-audio-files-query"
+import { DB_PATH } from "@/lib/constants"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -40,7 +41,7 @@ export function DeleteAudio(file: BaseAudioFile) {
   const { isPending, mutate: deleteAudio } = useMutation({
     // Delete DB entry, then try to delete storage assets from their download URLs
     mutationFn: async (f: BaseAudioFile) => {
-      await remove(dbRef(db, `audio-metadata/files/${f.id}`))
+      await remove(dbRef(db, `${DB_PATH}/${f.id}`))
       await Promise.allSettled([
         deleteFileFromUrl(f.audioUrl),
         deleteFileFromUrl(f.clipUrl),

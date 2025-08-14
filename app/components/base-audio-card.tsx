@@ -1,12 +1,17 @@
-import { PauseIcon, PlayIcon } from "lucide-react"
 import { useEffect, useRef } from "react"
+import { motion } from "motion/react"
 import { ChangeTitle } from "@/components/change-title"
 import { DeleteAudio } from "@/components/delete-audio"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { cn } from "@/lib/utils"
-import type { BaseAudioFile } from "@/queries/use-base-audio-files-query"
 import { useBaseAudioStore } from "@/stores/use-base-audio-store"
+import { PauseIcon, PlayIcon } from "lucide-react"
+import { type BaseAudioFile } from "@/queries/use-base-audio-files-query"
+
+const AnimatedButton = motion(Button)
+const AnimatedPlayIcon = motion(PlayIcon)
+const AnimatedPauseIcon = motion(PauseIcon)
 
 export function BaseAudioCard(file: BaseAudioFile) {
   const { playingId, toggle, pause } = useBaseAudioStore()
@@ -73,23 +78,37 @@ export function BaseAudioCard(file: BaseAudioFile) {
           </audio>
 
           <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-            <Button
+            <AnimatedButton
               type="button"
               size="icon"
+              initial="play"
+              animate={isActive ? "pause" : "play"}
               aria-label={isActive ? "Pause" : "Play"}
               className={cn(
-                "pointer-events-auto rounded-full shadow-md transition-opacity",
+                "pointer-events-auto relative rounded-full shadow-md transition-opacity",
                 isActive
                   ? "opacity-0 group-hover/video:opacity-100"
                   : "opacity-100"
               )}
             >
-              {isActive ? (
-                <PauseIcon className="size-5" />
-              ) : (
-                <PlayIcon className="size-5" />
-              )}
-            </Button>
+              <AnimatedPlayIcon
+                className="absolute top-1/2 -translate-y-1/2 fill-current"
+                transition={{ duration: 0.2, ease: "easeInOut" }}
+                variants={{
+                  play: { opacity: 1, scale: 1 },
+                  pause: { opacity: 0, scale: 0.8 }
+                }}
+              />
+
+              <AnimatedPauseIcon
+                className="absolute top-1/2 -translate-y-1/2 fill-current"
+                transition={{ duration: 0.2, ease: "easeInOut" }}
+                variants={{
+                  play: { opacity: 0, scale: 0.8 },
+                  pause: { opacity: 1, scale: 1 }
+                }}
+              />
+            </AnimatedButton>
           </div>
         </div>
 

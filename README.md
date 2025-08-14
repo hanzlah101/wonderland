@@ -85,3 +85,5 @@ This template comes with [Tailwind CSS](https://tailwindcss.com/) already config
 ---
 
 Built with ❤️ using React Router.
+
+inspired from create reuse things like firebase utils or components b/w them but keep things simple. but this one is quite different in this one you only need audio

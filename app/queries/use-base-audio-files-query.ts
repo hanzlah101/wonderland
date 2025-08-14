@@ -3,6 +3,7 @@ import { ref as dbRef, get, onValue } from "firebase/database"
 import { useEffect } from "react"
 import { z } from "zod/mini"
 import { db } from "@/lib/firebase"
+import { DB_PATH } from "@/lib/constants"
 
 const baseAudioFileSchema = z.object({
   title: z.string(),
@@ -29,14 +30,14 @@ export function useBaseAudioFilesQuery() {
   const { data, isLoading, error, refetch } = useQuery<BaseAudioFile[]>({
     queryKey: ["base-audio-files"],
     queryFn: async () => {
-      const nodeRef = dbRef(db, "audio-metadata/files")
+      const nodeRef = dbRef(db, DB_PATH)
       const snap = await get(nodeRef)
       return snapshotToArray(snap.val())
     }
   })
 
   useEffect(() => {
-    const nodeRef = dbRef(db, "audio-metadata/files")
+    const nodeRef = dbRef(db, DB_PATH)
     const unsub = onValue(nodeRef, (snap) => {
       queryClient.setQueryData(
         ["base-audio-files"],
