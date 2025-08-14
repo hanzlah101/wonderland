@@ -1,8 +1,5 @@
-import type { Route } from "./+types/login"
 import { Navigate } from "react-router"
 import { LoginForm } from "@/components/auth/login-form"
-import { Spinner } from "@/components/ui/spinner"
-import { useSessionQuery } from "@/queries/use-session-query"
 import {
   Card,
   CardContent,
@@ -10,6 +7,9 @@ import {
   CardHeader,
   CardTitle
 } from "@/components/ui/card"
+import { Spinner } from "@/components/ui/spinner"
+import { useSessionQuery } from "@/queries/use-session-query"
+import type { Route } from "./+types/login"
 
 export function meta(_: Route.MetaArgs) {
   return [

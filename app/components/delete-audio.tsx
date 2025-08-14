@@ -1,7 +1,5 @@
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
 import { Trash2 } from "lucide-react"
-import { useDeleteAudioFileMutation } from "@/queries/use-audio-files"
+import { useState } from "react"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -13,20 +11,21 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger
 } from "@/components/ui/alert-dialog"
+import { Button } from "@/components/ui/button"
+import {
+  type BaseAudioFile,
+  useDeleteBaseAudioFileMutation
+} from "@/queries/use-base-audio-files"
 
 export function DeleteAudio({
   id,
   title,
   audioUrl,
-  clipUrl
-}: {
-  id: string
-  title: string
-  audioUrl: string
-  clipUrl: string
-}) {
+  clipUrl,
+  posterUrl
+}: BaseAudioFile) {
   const [open, setOpen] = useState(false)
-  const { isPending, mutate: deleteAudio } = useDeleteAudioFileMutation()
+  const { isPending, mutate: deleteAudio } = useDeleteBaseAudioFileMutation()
 
   return (
     <AlertDialog open={open} onOpenChange={setOpen}>
@@ -36,9 +35,9 @@ export function DeleteAudio({
           variant="destructive"
           size="icon"
           aria-label={`Delete ${title}`}
-          className="size-8"
+          className="hidden size-7 shrink-0 transition-opacity group-hover/actions:flex peer-data-[state=editing]:hidden data-[state=open]:flex"
         >
-          <Trash2 className="size-4" />
+          <Trash2 className="size-3.5" />
         </Button>
       </AlertDialogTrigger>
       <AlertDialogContent>
@@ -54,7 +53,14 @@ export function DeleteAudio({
           <AlertDialogAction
             disabled={isPending}
             onClick={() =>
-              deleteAudio({ id, title, audioUrl, clipUrl, duration: 0 })
+              deleteAudio({
+                id,
+                title,
+                audioUrl,
+                clipUrl,
+                posterUrl,
+                duration: 0
+              })
             }
           >
             {isPending ? "Deleting..." : "Delete"}
