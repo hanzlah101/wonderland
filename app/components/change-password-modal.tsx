@@ -1,10 +1,12 @@
-import { z } from "zod/mini"
-import { toast } from "sonner"
-import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { auth } from "@/lib/firebase"
-import { getErrorMessage } from "@/lib/firebase-errors"
-import { Input } from "@/components/ui/input"
+import {
+  EmailAuthProvider,
+  reauthenticateWithCredential,
+  updatePassword
+} from "firebase/auth"
+import { useForm } from "react-hook-form"
+import { toast } from "sonner"
+import { z } from "zod/mini"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -14,11 +16,6 @@ import {
   DialogTitle
 } from "@/components/ui/dialog"
 import {
-  EmailAuthProvider,
-  reauthenticateWithCredential,
-  updatePassword
-} from "firebase/auth"
-import {
   Form,
   FormControl,
   FormField,
@@ -26,6 +23,9 @@ import {
   FormLabel,
   FormMessage
 } from "@/components/ui/form"
+import { Input } from "@/components/ui/input"
+import { auth } from "@/lib/firebase"
+import { getErrorMessage } from "@/lib/firebase-errors"
 
 type ChangePasswordModalProps = {
   isOpen: boolean

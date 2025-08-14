@@ -7,5 +7,5 @@ bunx react-router typegen
 # Run TypeScript type checking
 bunx tsc
 
-# Format with ultracite
-bunx ultracite format
+# Lint with eslint
+bun run lint

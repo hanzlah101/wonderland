@@ -1,8 +1,5 @@
 import { UploadIcon } from "lucide-react"
-import { usePlaylistUpload } from "@/hooks/use-playlist-upload"
-import { cn } from "@/lib/utils"
 import { useDropzone } from "react-dropzone"
-import { Progress } from "@/components/ui/progress"
 import {
   Card,
   CardContent,
@@ -10,6 +7,9 @@ import {
   CardHeader,
   CardTitle
 } from "@/components/ui/card"
+import { Progress } from "@/components/ui/progress"
+import { useBaseAudioUpload } from "@/hooks/use-base-audio-upload"
+import { cn } from "@/lib/utils"
 
 function UploadPreviewItem({
   folder,
@@ -41,7 +41,7 @@ function UploadPreviewItem({
             className="h-full w-full object-cover"
           />
         ) : (
-          <div className="flex h-full w-full items-center justify-center text-muted-foreground text-xs">
+          <div className="flex h-full w-full items-center justify-center text-xs text-muted-foreground">
             Loading...
           </div>
         )}
@@ -50,22 +50,19 @@ function UploadPreviewItem({
         <p className="font-medium" title={folder}>
           {folder}
         </p>
-        {isFailed ? (
-          <p className="text-destructive text-sm" aria-live="polite">
+        <Progress value={progress} />
+        {isFailed && (
+          <p className="text-sm text-destructive" aria-live="polite">
             {error || "Upload failed"}
           </p>
-        ) : (
-          <div className="flex h-5 w-full items-center justify-center">
-            <Progress value={progress} />
-          </div>
         )}
       </div>
     </div>
   )
 }
 
-export function PlaylistsUpload() {
-  const { onDrop, mediaUploads } = usePlaylistUpload()
+export function BaseAudioUpload() {
+  const { onDrop, mediaUploads } = useBaseAudioUpload()
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     multiple: true,
@@ -106,7 +103,7 @@ export function PlaylistsUpload() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Upload playlist folders</CardTitle>
+        <CardTitle>Upload base audio folders</CardTitle>
         <CardDescription>
           Drag and drop up to 10 folders. Each folder must contain exactly one
           audio and one video file.
@@ -116,7 +113,7 @@ export function PlaylistsUpload() {
         <div
           {...getRootProps()}
           className={cn(
-            "flex h-76 w-full cursor-pointer flex-col items-center justify-center gap-4 rounded-lg border-2 border-input border-dashed p-6",
+            "flex h-76 w-full cursor-pointer flex-col items-center justify-center gap-4 rounded-lg border-2 border-dashed border-input p-6",
             isDragActive
               ? "bg-input/60 text-accent-foreground"
               : "bg-input/30 text-muted-foreground"
@@ -128,7 +125,7 @@ export function PlaylistsUpload() {
             <p className="font-medium text-foreground">
               Drag and drop folders here
             </p>
-            <p className="text-muted-foreground text-sm">
+            <p className="text-sm text-muted-foreground">
               Tip: Select multiple folders from your file explorer and drop them
               together.
             </p>

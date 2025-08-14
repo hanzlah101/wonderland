@@ -1,4 +1,6 @@
 import "./app.css"
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
+import { ThemeProvider } from "next-themes"
 import {
   isRouteErrorResponse,
   Links,
@@ -7,11 +9,8 @@ import {
   Scripts,
   ScrollRestoration
 } from "react-router"
-
-import type { Route } from "./+types/root"
 import { Toaster } from "@/components/ui/sonner"
-import { ThemeProvider } from "next-themes"
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
+import type { Route } from "./+types/root"
 
 const queryClient = new QueryClient({
   defaultOptions: {

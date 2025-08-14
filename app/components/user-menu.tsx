@@ -1,6 +1,5 @@
-import { useState } from "react"
-import { useSessionQuery } from "@/queries/use-session-query"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { useQueryClient } from "@tanstack/react-query"
+import { signOut } from "firebase/auth"
 import {
   KeyIcon,
   LogOutIcon,
@@ -9,26 +8,27 @@ import {
   MusicIcon,
   SunIcon
 } from "lucide-react"
-import { signOut } from "firebase/auth"
-import { auth } from "@/lib/firebase"
-import { useQueryClient } from "@tanstack/react-query"
-import { Link } from "react-router"
 import { useTheme } from "next-themes"
-import { ChangePasswordModal } from "./change-password-modal"
+import { useState } from "react"
+import { Link } from "react-router"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import {
   DropdownMenu,
+  DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuPortal,
-  DropdownMenuCheckboxItem,
   DropdownMenuSeparator,
   DropdownMenuSub,
   DropdownMenuSubContent,
   DropdownMenuSubTrigger,
   DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu"
+import { auth } from "@/lib/firebase"
+import { useSessionQuery } from "@/queries/use-session-query"
+import { ChangePasswordModal } from "./change-password-modal"
 
 const THEME_ICONS = {
   light: SunIcon,
@@ -88,9 +88,9 @@ export function UserMenu() {
 
           <DropdownMenuGroup>
             <DropdownMenuItem asChild>
-              <Link to="/create-playlist">
+              <Link to="/create-base-audio">
                 <MusicIcon />
-                Create Playlist
+                Create Base Audio
               </Link>
             </DropdownMenuItem>
 
@@ -100,7 +100,7 @@ export function UserMenu() {
                 Appearance
               </DropdownMenuSubTrigger>
               <DropdownMenuPortal>
-                <DropdownMenuSubContent className=" [&_svg]:text-muted-foreground">
+                <DropdownMenuSubContent className="[&_svg]:text-muted-foreground">
                   {(["light", "dark", "system"] as const).map((th) => {
                     const Icon = THEME_ICONS[th]
                     return (

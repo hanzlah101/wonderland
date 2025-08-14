@@ -1,13 +1,13 @@
-import { useCallback, useState } from "react"
-import { toast } from "sonner"
-import { storage, db } from "@/lib/firebase"
-import { ref as dbRef, set, get } from "firebase/database"
-import type { DropzoneOptions } from "react-dropzone"
+import { ref as dbRef, get, set } from "firebase/database"
 import {
+  getDownloadURL,
   ref as storageRef,
-  uploadBytesResumable,
-  getDownloadURL
+  uploadBytesResumable
 } from "firebase/storage"
+import { useCallback, useState } from "react"
+import type { DropzoneOptions } from "react-dropzone"
+import { toast } from "sonner"
+import { db, storage } from "@/lib/firebase"
 
 type OnDrop = NonNullable<DropzoneOptions["onDrop"]>
 
@@ -298,9 +298,9 @@ function validateDroppedFolders(folderMap: Record<string, FileEntry[]>) {
   return uploads
 }
 
-// Upload with progress
+// Upload with progress (supports both File and Blob)
 function uploadFileWithProgress(
-  file: File,
+  file: File | Blob,
   path: string,
   onProgress: (progress: number) => void
 ) {
@@ -329,56 +329,48 @@ function uploadFileWithProgress(
   })
 }
 
-// Generate a quick poster image from a video File without loading the full video
-async function generateVideoThumbnail(file: File): Promise<string> {
-  const videoUrl = URL.createObjectURL(file)
-  const video = document.createElement("video")
-  video.preload = "metadata"
-  video.muted = true
-  video.src = videoUrl
-
-  try {
-    await new Promise<void>((resolve, reject) => {
-      const onLoadedMeta = () => {
-        const duration = Number.isFinite(video.duration) ? video.duration : 0
-        const target = duration > 0 ? Math.min(0.1, duration * 0.01) : 0
-        const onSeeked = () => {
-          video.removeEventListener("seeked", onSeeked)
-          resolve()
-        }
-        video.addEventListener("seeked", onSeeked, { once: true })
-        try {
-          video.currentTime = target
-        } catch {
-          resolve()
-        }
-      }
-      const onError = () => reject(new Error("Failed to load video metadata"))
-      video.addEventListener("loadedmetadata", onLoadedMeta, { once: true })
-      video.addEventListener("error", onError, { once: true })
-    })
-
+// Simple poster generation from video center
+function generateVideoPosterBlob(file: File): Promise<Blob> {
+  return new Promise((resolve, reject) => {
+    const video = document.createElement("video")
     const canvas = document.createElement("canvas")
-    const width = Math.max(1, Math.floor(video.videoWidth || 1))
-    const height = Math.max(1, Math.floor(video.videoHeight || 1))
-    canvas.width = width
-    canvas.height = height
     const ctx = canvas.getContext("2d")
-    if (!ctx) throw new Error("Canvas not supported")
-    ctx.drawImage(video, 0, 0, width, height)
 
-    const blob: Blob = await new Promise((resolve, reject) => {
+    if (!ctx) {
+      reject(new Error("Canvas not supported"))
+      return
+    }
+
+    video.onloadedmetadata = () => {
+      // Set canvas to 16:9 aspect ratio, max 800px width for performance
+      canvas.width = 800
+      canvas.height = 450
+
+      // Jump to center of video
+      video.currentTime = video.duration / 2
+    }
+
+    video.onseeked = () => {
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height)
       canvas.toBlob(
-        (b) => (b ? resolve(b) : reject(new Error("toBlob failed"))),
+        (blob) => {
+          if (blob) resolve(blob)
+          else reject(new Error("Failed to generate poster"))
+        },
         "image/jpeg",
         0.8
       )
-    })
+    }
 
-    return URL.createObjectURL(blob)
-  } finally {
-    URL.revokeObjectURL(videoUrl)
-  }
+    video.onerror = () => reject(new Error("Failed to load video"))
+    video.src = URL.createObjectURL(file)
+  })
+}
+
+// Generate preview thumbnail for upload UI
+async function generateVideoThumbnail(file: File): Promise<string> {
+  const blob = await generateVideoPosterBlob(file)
+  return URL.createObjectURL(blob)
 }
 
 async function processFolderUpload(
@@ -421,11 +413,13 @@ async function processFolderUpload(
     const videoExt = getFileExtension(upload.video.name)
     const audioPath = `base-audio/${upload.folder}/audio${audioExt}`
     const videoPath = `base-audio/${upload.folder}/video${videoExt}`
+    const posterPath = `base-audio/${upload.folder}/poster.jpg`
 
     let audioPct = 0
     let videoPct = 0
+    let posterPct = 0
     const update = () => {
-      const combined = Math.round((audioPct + videoPct) / 2)
+      const combined = Math.round((audioPct + videoPct + posterPct) / 3)
       // Cap upload progress at 90% until metadata is successfully saved
       const capped = Math.min(90, combined)
       setMediaUploads((prev) =>
@@ -434,14 +428,19 @@ async function processFolderUpload(
     }
 
     const durationSeconds = await getAudioDuration(upload.audio)
+    const posterBlob = await generateVideoPosterBlob(upload.video)
 
-    const [audioUrl, clipUrl] = await Promise.all([
+    const [audioUrl, clipUrl, posterUrl] = await Promise.all([
       uploadFileWithProgress(upload.audio, audioPath, (p) => {
         audioPct = p
         update()
       }),
       uploadFileWithProgress(upload.video, videoPath, (p) => {
         videoPct = p
+        update()
+      }),
+      uploadFileWithProgress(posterBlob, posterPath, (p) => {
+        posterPct = p
         update()
       })
     ])
@@ -454,6 +453,7 @@ async function processFolderUpload(
         title: upload.folder,
         audioUrl,
         clipUrl,
+        posterUrl,
         duration: durationSeconds
       })
       metadataSaved = true
@@ -498,7 +498,7 @@ async function processFolderUpload(
   }
 }
 
-export function usePlaylistUpload() {
+export function useBaseAudioUpload() {
   const [mediaUploads, setMediaUploads] = useState<MediaUpload[]>([])
 
   const onDrop: OnDrop = useCallback(

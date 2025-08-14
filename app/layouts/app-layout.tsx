@@ -1,7 +1,9 @@
-import { Header } from "@/components/header"
 import { Navigate, Outlet } from "react-router"
-import { useSessionQuery } from "@/queries/use-session-query"
+import { AppSidebar } from "@/components/app-sidebar"
+import { Header } from "@/components/header"
+import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
 import { Spinner } from "@/components/ui/spinner"
+import { useSessionQuery } from "@/queries/use-session-query"
 
 export default function AppLayout() {
   const { user, isLoading } = useSessionQuery()
@@ -19,11 +21,14 @@ export default function AppLayout() {
   }
 
   return (
-    <main className="px-4">
-      <Header />
-      <main className="container mx-auto py-12">
-        <Outlet />
-      </main>
-    </main>
+    <SidebarProvider>
+      <AppSidebar />
+      <SidebarInset className="container mx-auto px-4">
+        <Header />
+        <main className="py-6">
+          <Outlet />
+        </main>
+      </SidebarInset>
+    </SidebarProvider>
   )
 }
