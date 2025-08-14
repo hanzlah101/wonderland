@@ -1,10 +1,11 @@
+import { Link, useLocation } from "react-router"
+import { Logo } from "@/components/logo"
 import {
   CircleFadingPlusIcon,
   Disc3Icon,
   MusicIcon,
   PlusIcon
 } from "lucide-react"
-import { Link, useLocation } from "react-router"
 import {
   Sidebar,
   SidebarContent,
@@ -17,7 +18,6 @@ import {
   SidebarMenuItem,
   SidebarRail
 } from "@/components/ui/sidebar"
-import { Logo } from "./logo"
 
 export function AppSidebar() {
   return (
@@ -50,11 +50,11 @@ export function AppSidebar() {
 
           <SidebarGroupContent>
             <SidebarMenu>
-              <Item icon={Disc3Icon} label="Layer Audio" href="/layer-audios" />
+              <Item icon={Disc3Icon} label="Layer Audio" href="/layer-audio" />
               <Item
                 icon={CircleFadingPlusIcon}
                 label="Create Layer Audio"
-                href="/create-layer"
+                href="/create-layer-audio"
               />
             </SidebarMenu>
           </SidebarGroupContent>
@@ -79,7 +79,7 @@ function Item({
 
   return (
     <SidebarMenuItem>
-      <SidebarMenuButton asChild isActive={pathname === href}>
+      <SidebarMenuButton asChild isActive={pathname === href} tooltip={label}>
         <Link to={href}>
           <Icon />
           {label}

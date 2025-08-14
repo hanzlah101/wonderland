@@ -1,6 +1,7 @@
 import { useQueryClient } from "@tanstack/react-query"
 import { signOut } from "firebase/auth"
 import {
+  Disc3Icon,
   KeyIcon,
   LogOutIcon,
   MonitorSmartphoneIcon,
@@ -91,6 +92,13 @@ export function UserMenu() {
               <Link to="/create-base-audio">
                 <MusicIcon />
                 Create Base Audio
+              </Link>
+            </DropdownMenuItem>
+
+            <DropdownMenuItem asChild>
+              <Link to="/create-layer-audio">
+                <Disc3Icon />
+                Create Layer Audio
               </Link>
             </DropdownMenuItem>
 
