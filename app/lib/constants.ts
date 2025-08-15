@@ -12,7 +12,14 @@ export const MAX_LAYER_AUDIO_FILES = 10
 
 // Supported MIME types
 export const MIME_TYPES = {
-  AUDIO: ["audio/mpeg", "audio/wav", "audio/mp3", "audio/ogg", "audio/m4a"],
+  AUDIO: [
+    "audio/mpeg",
+    "audio/wav",
+    "audio/mp3",
+    "audio/ogg",
+    "audio/m4a",
+    "audio/x-m4a"
+  ],
   VIDEO: [
     "video/mp4",
     "video/webm",
