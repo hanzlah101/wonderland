@@ -1,21 +1,36 @@
-import { useEffect, useState } from "react"
 import type { FormEvent, KeyboardEvent } from "react"
-import { Input } from "@/components/ui/input"
-import { Button } from "@/components/ui/button"
-import { cn } from "@/lib/utils"
-import { db } from "@/lib/firebase"
-import { ref as dbRef, update } from "firebase/database"
+import { useEffect, useState } from "react"
 import { toast } from "sonner"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { db } from "@/lib/firebase"
 import { getErrorMessage } from "@/lib/firebase-errors"
+import { LAYOUT_DB_PATH } from "@/lib/constants"
+import {
+  query,
+  orderByChild,
+  equalTo,
+  get,
+  update,
+  ref as dbRef
+} from "firebase/database"
 
-export function ChangeTitle({
+async function isTitleTaken(title: string) {
+  const q = query(
+    dbRef(db, LAYOUT_DB_PATH),
+    orderByChild("title"),
+    equalTo(title)
+  )
+  const snapshot = await get(q)
+  return snapshot.exists()
+}
+
+export function ChangeLayoutAudioTitle({
   id,
-  title,
-  className
+  title
 }: {
   id: string
   title: string
-  className?: string
 }) {
   const [isEditing, setIsEditing] = useState(false)
   const [value, setValue] = useState(title)
@@ -34,21 +49,30 @@ export function ChangeTitle({
   }
 
   const save = async () => {
-    const next = value.trim()
-    if (!next) {
+    const newTitle = value.trim()
+    if (!newTitle) {
       toast.error("Title cannot be empty")
       setIsEditing(false)
       setValue(title)
       return
     }
-    if (next === title) {
+    if (newTitle === title) {
       setIsEditing(false)
       return
     }
 
     try {
       setIsSaving(true)
-      await update(dbRef(db, `audio-metadata/files/${id}`), { title: next })
+
+      const taken = await isTitleTaken(newTitle)
+      if (taken) {
+        toast.error("Title already exists")
+        setIsSaving(false)
+        setIsEditing(false)
+        return
+      }
+
+      await update(dbRef(db, `${LAYOUT_DB_PATH}/${id}`), { title: newTitle })
       toast.success("Title updated")
       setIsEditing(false)
     } catch (err) {
@@ -70,22 +94,24 @@ export function ChangeTitle({
 
   if (!isEditing) {
     return (
-      <Button
-        type="button"
-        variant="link"
-        title={title}
-        onClick={() => setIsEditing(true)}
-        onKeyDown={onKeyDownView}
-        className={cn("truncate p-0", className)}
-        aria-label={`Edit title: ${title}`}
-      >
-        {title}
-      </Button>
+      <div className="min-w-0 flex-1">
+        <Button
+          type="button"
+          variant="link"
+          title={title}
+          onClick={() => setIsEditing(true)}
+          onKeyDown={onKeyDownView}
+          aria-label={`Edit title: ${title}`}
+          className="h-8 w-fit max-w-full justify-start p-0 text-left"
+        >
+          <span className="block truncate">{title}</span>
+        </Button>
+      </div>
     )
   }
 
   return (
-    <form onSubmit={onSubmit} className={cn("w-full", className)}>
+    <form onSubmit={onSubmit} data-state="editing" className="peer w-full">
       <Input
         autoFocus
         value={value}
