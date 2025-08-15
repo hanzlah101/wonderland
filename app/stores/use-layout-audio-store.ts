@@ -1,6 +1,6 @@
 import { create } from "zustand"
 
-interface BaseAudioStore {
+interface LayoutAudioStore {
   playingId: string | null
   play: (id: string) => void
   pause: () => void
@@ -8,7 +8,7 @@ interface BaseAudioStore {
   cleanup: () => void
 }
 
-export const useBaseAudioStore = create<BaseAudioStore>((set) => ({
+export const useLayoutAudioStore = create<LayoutAudioStore>((set) => ({
   playingId: null,
   play: (id) => set({ playingId: id }),
   pause: () => set({ playingId: null }),

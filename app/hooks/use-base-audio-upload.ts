@@ -3,7 +3,12 @@ import { toast } from "sonner"
 import { useCallback, useState } from "react"
 import { db, storage } from "@/lib/firebase"
 import { ref as dbRef, get, set } from "firebase/database"
-import { DB_PATH, STORAGE_PATH, MAX_FOLDERS, MIME_TYPES } from "@/lib/constants"
+import {
+  BASE_DB_PATH,
+  BASE_STORAGE_PATH,
+  MAX_FOLDERS,
+  MIME_TYPES
+} from "@/lib/constants"
 import { type DropzoneOptions } from "react-dropzone"
 import { type BaseAudioFile } from "@/queries/use-base-audio-files-query"
 import {
@@ -53,7 +58,7 @@ function generateUniqueId(title: string) {
 // Check if title already exists in database
 async function checkTitleExists(title: string) {
   try {
-    const snapshot = await get(dbRef(db, DB_PATH))
+    const snapshot = await get(dbRef(db, BASE_DB_PATH))
     if (!snapshot.exists()) return false
 
     const data = snapshot.val() as Record<string, BaseAudioFile>
@@ -74,7 +79,7 @@ async function generateUniqueIdSafe(title: string) {
     const id = generateUniqueId(title)
 
     try {
-      const nodeRef = dbRef(db, `${DB_PATH}/${id}`)
+      const nodeRef = dbRef(db, `${BASE_DB_PATH}/${id}`)
       const snap = await get(nodeRef)
       if (!snap.exists()) {
         return id
@@ -484,7 +489,7 @@ async function processFolderUpload(
   // Step 3: Check for ID collision and regenerate if needed
   let finalId = upload.id
   try {
-    const nodeRef = dbRef(db, `${DB_PATH}/${finalId}`)
+    const nodeRef = dbRef(db, `${BASE_DB_PATH}/${finalId}`)
     const snap = await get(nodeRef)
     if (snap.exists()) {
       // Regenerate ID if collision detected
@@ -506,9 +511,9 @@ async function processFolderUpload(
   try {
     const audioExt = getFileExtension(upload.audio.name)
     const videoExt = getFileExtension(upload.video.name)
-    const audioPath = `${STORAGE_PATH}/${finalId}/audio${audioExt}`
-    const videoPath = `${STORAGE_PATH}/${finalId}/video${videoExt}`
-    const posterPath = `${STORAGE_PATH}/${finalId}/poster.jpg`
+    const audioPath = `${BASE_STORAGE_PATH}/${finalId}/audio${audioExt}`
+    const videoPath = `${BASE_STORAGE_PATH}/${finalId}/video${videoExt}`
+    const posterPath = `${BASE_STORAGE_PATH}/${finalId}/poster.jpg`
 
     let audioPct = 0
     let videoPct = 0
@@ -543,7 +548,7 @@ async function processFolderUpload(
     // Save metadata in Realtime DB (final 10%)
     let metadataSaved = false
     try {
-      const nodeRef = dbRef(db, `${DB_PATH}/${finalId}`)
+      const nodeRef = dbRef(db, `${BASE_DB_PATH}/${finalId}`)
       await set(nodeRef, {
         id: finalId,
         title: upload.folder,
