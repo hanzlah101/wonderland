@@ -1,14 +1,14 @@
 // Firebase Database paths
 export const BASE_DB_PATH = "audio-metadata/files"
-export const LAYOUT_DB_PATH = "layout-audio/files"
+export const LAYER_DB_PATH = "layer-audio/files"
 
 // Firebase Storage paths
 export const BASE_STORAGE_PATH = "base-audio"
-export const LAYOUT_STORAGE_PATH = "layout-audio"
+export const LAYER_STORAGE_PATH = "layer-audio"
 
 // File constraints
 export const MAX_FOLDERS = 10
-export const MAX_LAYOUT_AUDIO_FILES = 10
+export const MAX_LAYER_AUDIO_FILES = 10
 
 // Supported MIME types
 export const MIME_TYPES = {

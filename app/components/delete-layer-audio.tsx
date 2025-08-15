@@ -5,8 +5,8 @@ import { deleteFileFromUrl } from "@/lib/firebase-storage"
 import { db } from "@/lib/firebase"
 import { ref as dbRef, remove } from "firebase/database"
 import { Trash2Icon } from "lucide-react"
-import { LAYOUT_DB_PATH } from "@/lib/constants"
-import { type LayoutAudioFile } from "@/queries/use-layout-audio-files-query"
+import { LAYER_DB_PATH } from "@/lib/constants"
+import { type LayerAudioFile } from "@/queries/use-layer-audio-files-query"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -19,22 +19,22 @@ import {
   AlertDialogTrigger
 } from "@/components/ui/alert-dialog"
 
-export function DeleteLayoutAudio(file: LayoutAudioFile) {
+export function DeleteLayerAudio(file: LayerAudioFile) {
   const queryClient = useQueryClient()
 
   const { mutate: deleteFile, isPending } = useMutation({
-    mutationKey: ["delete-layout-audio", file.id],
+    mutationKey: ["delete-layer-audio", file.id],
     // Delete DB entry, then try to delete storage assets from their download URLs
-    mutationFn: async (f: LayoutAudioFile) => {
-      await remove(dbRef(db, `${LAYOUT_DB_PATH}/${f.id}`))
+    mutationFn: async (f: LayerAudioFile) => {
+      await remove(dbRef(db, `${LAYER_DB_PATH}/${f.id}`))
       await Promise.allSettled([deleteFileFromUrl(f.audioUrl)])
     },
     onSuccess: () => {
-      toast.success("Layout audio deleted")
-      queryClient.invalidateQueries({ queryKey: ["layout-audio-files"] })
+      toast.success("Layer audio deleted")
+      queryClient.invalidateQueries({ queryKey: ["layer-audio-files"] })
     },
     onError: () => {
-      toast.error("Failed to delete layout audio")
+      toast.error("Failed to delete layer audio")
     }
   })
 
@@ -52,7 +52,7 @@ export function DeleteLayoutAudio(file: LayoutAudioFile) {
       </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>Delete layout audio</AlertDialogTitle>
+          <AlertDialogTitle>Delete layer audio</AlertDialogTitle>
           <AlertDialogDescription>
             Are you sure you want to delete &apos;{file.title}&apos;? This
             action cannot be undone.

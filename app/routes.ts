@@ -10,7 +10,7 @@ export default [
   layout("layouts/app-layout.tsx", [
     index("routes/base-audio.tsx"),
     route("create-base-audio", "routes/create-base-audio.tsx"),
-    route("layout-audio", "routes/layout-audio.tsx"),
-    route("create-layout-audio", "routes/create-layout-audio.tsx")
+    route("layer-audio", "routes/layer-audio.tsx"),
+    route("create-layer-audio", "routes/create-layer-audio.tsx")
   ])
 ] satisfies RouteConfig

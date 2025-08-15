@@ -12,7 +12,7 @@ type AudioUpload = {
   error?: string | null
 }
 
-export function LayoutAudioUploadCard(upload: AudioUpload) {
+export function LayerAudioUploadCard(upload: AudioUpload) {
   const { title, progress, status, error, file } = upload
 
   const isCompleted = status === "completed"
