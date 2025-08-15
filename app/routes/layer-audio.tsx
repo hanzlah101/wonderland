@@ -1,10 +1,10 @@
 import { useEffect } from "react"
-import { LayoutAudioCard } from "@/components/layout-audio-card"
+import { LayerAudioCard } from "@/components/layer-audio-card"
 import { Card, CardContent } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
-import { useLayoutAudioFilesQuery } from "@/queries/use-layout-audio-files-query"
-import { useLayoutAudioStore } from "@/stores/use-layout-audio-store"
-import type { Route } from "./+types/layout-audio"
+import { useLayerAudioFilesQuery } from "@/queries/use-layer-audio-files-query"
+import { useLayerAudioStore } from "@/stores/use-layer-audio-store"
+import type { Route } from "./+types/layer-audio"
 import { Button } from "@/components/ui/button"
 import { Link } from "react-router"
 import {
@@ -16,14 +16,14 @@ import {
 
 export function meta(_: Route.MetaArgs) {
   return [
-    { title: "Layout Audio - Wonderland Admin" },
-    { name: "description", content: "Manage your Wonderland Layout Audio" }
+    { title: "Layer Audio - Wonderland Admin" },
+    { name: "description", content: "Manage your Wonderland Layer Audio" }
   ]
 }
 
-export default function LayoutAudio() {
-  const { files, isLoading, error, refetch } = useLayoutAudioFilesQuery()
-  const { playingId, pause, cleanup } = useLayoutAudioStore()
+export default function LayerAudio() {
+  const { files, isLoading, error, refetch } = useLayerAudioFilesQuery()
+  const { playingId, pause, cleanup } = useLayerAudioStore()
 
   // If the currently playing item is deleted, reset playingId
   useEffect(() => {
@@ -73,7 +73,7 @@ export default function LayoutAudio() {
         </div>
         <div className="mb-4 flex flex-col items-center justify-center space-y-0.5 text-center">
           <h2 className="font-serif text-2xl font-semibold">
-            Failed to load layout audio files
+            Failed to load layer audio files
           </h2>
           <p className="text-sm text-muted-foreground">
             There was an error loading your files. Please try again.
@@ -96,16 +96,16 @@ export default function LayoutAudio() {
         </div>
         <div className="mb-4 flex flex-col items-center justify-center space-y-0.5 text-center">
           <h2 className="font-serif text-2xl font-semibold">
-            No layout audio files
+            No layer audio files
           </h2>
           <p className="text-sm text-muted-foreground">
-            Get started by creating your first layout audio file
+            Get started by creating your first layer audio file
           </p>
         </div>
         <Button asChild className="h-9">
-          <Link to="/create-layout-audio">
+          <Link to="/create-layer-audio">
             <PlusIcon />
-            Create Layout Audio
+            Create Layer Audio
           </Link>
         </Button>
       </div>
@@ -117,7 +117,7 @@ export default function LayoutAudio() {
       <PageHeader />
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {files.map((file) => (
-          <LayoutAudioCard key={file.id} {...file} />
+          <LayerAudioCard key={file.id} {...file} />
         ))}
       </div>
     </div>
@@ -127,11 +127,11 @@ export default function LayoutAudio() {
 function PageHeader() {
   return (
     <div className="flex items-center justify-between">
-      <h2 className="font-serif text-3xl font-semibold">Layout Audio</h2>
+      <h2 className="font-serif text-3xl font-semibold">Layer Audio</h2>
       <Button size="sm" asChild>
-        <Link to="/create-layout-audio">
+        <Link to="/create-layer-audio">
           <PlusIcon />
-          New Layout Audio
+          New Layer Audio
         </Link>
       </Button>
     </div>

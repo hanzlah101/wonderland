@@ -5,13 +5,13 @@ import { useCallback, useState } from "react"
 import { db, storage } from "@/lib/firebase"
 import { ref as dbRef, get, set } from "firebase/database"
 import {
-  LAYOUT_DB_PATH,
-  LAYOUT_STORAGE_PATH,
-  MAX_LAYOUT_AUDIO_FILES,
+  LAYER_DB_PATH,
+  LAYER_STORAGE_PATH,
+  MAX_LAYER_AUDIO_FILES,
   MIME_TYPES
 } from "@/lib/constants"
 import { type DropzoneOptions } from "react-dropzone"
-import { type LayoutAudioFile } from "@/queries/use-layout-audio-files-query"
+import { type LayerAudioFile } from "@/queries/use-layer-audio-files-query"
 import {
   getDownloadURL,
   ref as storageRef,
@@ -44,10 +44,10 @@ function generateUniqueId(title: string) {
 // Check if title already exists in database
 async function checkTitleExists(title: string) {
   try {
-    const snapshot = await get(dbRef(db, LAYOUT_DB_PATH))
+    const snapshot = await get(dbRef(db, LAYER_DB_PATH))
     if (!snapshot.exists()) return false
 
-    const data = snapshot.val() as Record<string, LayoutAudioFile>
+    const data = snapshot.val() as Record<string, LayerAudioFile>
     return Object.values(data).some(
       (item) => item?.title?.toLowerCase() === title.toLowerCase()
     )
@@ -65,7 +65,7 @@ async function generateUniqueIdSafe(title: string) {
     const id = generateUniqueId(title)
 
     try {
-      const nodeRef = dbRef(db, `${LAYOUT_DB_PATH}/${id}`)
+      const nodeRef = dbRef(db, `${LAYER_DB_PATH}/${id}`)
       const snap = await get(nodeRef)
       if (!snap.exists()) {
         return id
@@ -169,7 +169,7 @@ async function processAudioUpload(
   // Check for ID collision and regenerate if needed
   let finalId = upload.id
   try {
-    const nodeRef = dbRef(db, `${LAYOUT_DB_PATH}/${finalId}`)
+    const nodeRef = dbRef(db, `${LAYER_DB_PATH}/${finalId}`)
     const snap = await get(nodeRef)
     if (snap.exists()) {
       finalId = await generateUniqueIdSafe(upload.title)
@@ -189,7 +189,7 @@ async function processAudioUpload(
 
   try {
     const audioExt = getFileExtension(upload.file.name)
-    const audioPath = `${LAYOUT_STORAGE_PATH}/${finalId}/audio${audioExt}`
+    const audioPath = `${LAYER_STORAGE_PATH}/${finalId}/audio${audioExt}`
 
     let uploadProgress = 0
     const updateProgress = () => {
@@ -214,7 +214,7 @@ async function processAudioUpload(
     // Save metadata in Realtime DB (final 10%)
     let metadataSaved = false
     try {
-      const nodeRef = dbRef(db, `${LAYOUT_DB_PATH}/${finalId}`)
+      const nodeRef = dbRef(db, `${LAYER_DB_PATH}/${finalId}`)
       await set(nodeRef, {
         id: finalId,
         title: upload.title,
@@ -257,7 +257,7 @@ async function processAudioUpload(
   }
 }
 
-export function useLayoutAudioUpload() {
+export function useLayerAudioUpload() {
   const [audioUploads, setAudioUploads] = useState<AudioUpload[]>([])
 
   // Check if all uploads are resolved
@@ -283,8 +283,8 @@ export function useLayoutAudioUpload() {
 
     if (acceptedFiles.length === 0) return
 
-    if (acceptedFiles.length > MAX_LAYOUT_AUDIO_FILES) {
-      toast.error(`Too many files (max ${MAX_LAYOUT_AUDIO_FILES})`)
+    if (acceptedFiles.length > MAX_LAYER_AUDIO_FILES) {
+      toast.error(`Too many files (max ${MAX_LAYER_AUDIO_FILES})`)
       return
     }
 

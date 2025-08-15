@@ -1,12 +1,12 @@
 import * as React from "react"
 import { Howl } from "howler"
 import { Card, CardContent } from "@/components/ui/card"
-import { useLayoutAudioStore } from "@/stores/use-layout-audio-store"
-import { ChangeLayoutAudioTitle } from "@/components/change-layout-audio-title"
-import { DeleteLayoutAudio } from "@/components/delete-layout-audio"
+import { useLayerAudioStore } from "@/stores/use-layer-audio-store"
+import { ChangeLayerAudioTitle } from "@/components/change-layer-audio-title"
+import { DeleteLayerAudio } from "@/components/delete-layer-audio"
 import { PlayPauseButton } from "./play-pause-button"
 import { Slider } from "@/components/ui/slider"
-import { type LayoutAudioFile } from "@/queries/use-layout-audio-files-query"
+import { type LayerAudioFile } from "@/queries/use-layer-audio-files-query"
 
 function formatDuration(seconds: number): string {
   const mins = Math.floor(seconds / 60)
@@ -14,8 +14,8 @@ function formatDuration(seconds: number): string {
   return `${mins}:${secs.toString().padStart(2, "0")}`
 }
 
-export function LayoutAudioCard(file: LayoutAudioFile) {
-  const { playingId, toggle, pause } = useLayoutAudioStore()
+export function LayerAudioCard(file: LayerAudioFile) {
+  const { playingId, toggle, pause } = useLayerAudioStore()
   const howlRef = React.useRef<Howl | null>(null)
   const intervalRef = React.useRef<NodeJS.Timeout | null>(null)
   const [currentTime, setCurrentTime] = React.useState(0)
@@ -166,8 +166,8 @@ export function LayoutAudioCard(file: LayoutAudioFile) {
         </div>
 
         <div className="flex items-center justify-between gap-2">
-          <ChangeLayoutAudioTitle id={file.id} title={file.title} />
-          <DeleteLayoutAudio {...file} />
+          <ChangeLayerAudioTitle id={file.id} title={file.title} />
+          <DeleteLayerAudio {...file} />
         </div>
       </CardContent>
     </Card>

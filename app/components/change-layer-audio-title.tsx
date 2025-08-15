@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { db } from "@/lib/firebase"
 import { getErrorMessage } from "@/lib/firebase-errors"
-import { LAYOUT_DB_PATH } from "@/lib/constants"
+import { LAYER_DB_PATH } from "@/lib/constants"
 import {
   query,
   orderByChild,
@@ -17,7 +17,7 @@ import {
 
 async function isTitleTaken(title: string) {
   const q = query(
-    dbRef(db, LAYOUT_DB_PATH),
+    dbRef(db, LAYER_DB_PATH),
     orderByChild("title"),
     equalTo(title)
   )
@@ -25,7 +25,7 @@ async function isTitleTaken(title: string) {
   return snapshot.exists()
 }
 
-export function ChangeLayoutAudioTitle({
+export function ChangeLayerAudioTitle({
   id,
   title
 }: {
@@ -72,7 +72,7 @@ export function ChangeLayoutAudioTitle({
         return
       }
 
-      await update(dbRef(db, `${LAYOUT_DB_PATH}/${id}`), { title: newTitle })
+      await update(dbRef(db, `${LAYER_DB_PATH}/${id}`), { title: newTitle })
       toast.success("Title updated")
       setIsEditing(false)
     } catch (err) {

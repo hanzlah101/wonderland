@@ -1,18 +1,18 @@
 import { PlusIcon, UploadIcon } from "lucide-react"
 import { useDropzone } from "react-dropzone"
-import { useLayoutAudioUpload } from "@/hooks/use-layout-audio-upload"
-import { LayoutAudioUploadCard } from "@/components/layout-audio-upload-card"
+import { useLayerAudioUpload } from "@/hooks/use-layer-audio-upload"
+import { LayerAudioUploadCard } from "@/components/layer-audio-upload-card"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
-import { MAX_LAYOUT_AUDIO_FILES, MIME_TYPES } from "@/lib/constants"
+import { MAX_LAYER_AUDIO_FILES, MIME_TYPES } from "@/lib/constants"
 
-export function LayoutAudioUpload() {
+export function LayerAudioUpload() {
   const { onDrop, audioUploads, allResolved, clearUploads } =
-    useLayoutAudioUpload()
+    useLayerAudioUpload()
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     multiple: true,
-    maxFiles: MAX_LAYOUT_AUDIO_FILES,
+    maxFiles: MAX_LAYER_AUDIO_FILES,
     accept: {
       "audio/*": MIME_TYPES.AUDIO
     },
@@ -40,7 +40,7 @@ export function LayoutAudioUpload() {
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {audioUploads.map((item) => (
-            <LayoutAudioUploadCard key={item.id} {...item} />
+            <LayerAudioUploadCard key={item.id} {...item} />
           ))}
         </div>
       </div>
@@ -51,10 +51,10 @@ export function LayoutAudioUpload() {
     <div className="space-y-6">
       <div className="space-y-0.5">
         <h2 className="font-serif text-3xl font-semibold">
-          Upload layout audio files
+          Upload layer audio files
         </h2>
         <p className="text-sm text-muted-foreground">
-          Drag and drop up to {MAX_LAYOUT_AUDIO_FILES} audio files. Supported
+          Drag and drop up to {MAX_LAYER_AUDIO_FILES} audio files. Supported
           formats: MP3, WAV, OGG, M4A.
         </p>
       </div>
