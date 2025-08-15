@@ -1,27 +1,31 @@
 import { PlusIcon, UploadIcon } from "lucide-react"
 import { useDropzone } from "react-dropzone"
-import { useBaseAudioUpload } from "@/hooks/use-base-audio-upload"
-import { BaseAudioUploadCard } from "@/components/base-audio-upload-card"
+import { useLayoutAudioUpload } from "@/hooks/use-layout-audio-upload"
+import { LayoutAudioUploadCard } from "@/components/layout-audio-upload-card"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
-import { MAX_FOLDERS } from "@/lib/constants"
+import { MAX_LAYOUT_AUDIO_FILES, MIME_TYPES } from "@/lib/constants"
 
-export function BaseAudioUpload() {
-  const { onDrop, mediaUploads, allResolved, clearUploads } =
-    useBaseAudioUpload()
+export function LayoutAudioUpload() {
+  const { onDrop, audioUploads, allResolved, clearUploads } =
+    useLayoutAudioUpload()
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     multiple: true,
+    maxFiles: MAX_LAYOUT_AUDIO_FILES,
+    accept: {
+      "audio/*": MIME_TYPES.AUDIO
+    },
     onDrop
   })
 
-  if (mediaUploads.length > 0) {
+  if (audioUploads.length > 0) {
     return (
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <h2 className="font-serif text-3xl font-semibold">
-            Uploading {mediaUploads.length}{" "}
-            {mediaUploads.length === 1 ? "file" : "files"}
+            Uploading {audioUploads.length}{" "}
+            {audioUploads.length === 1 ? "file" : "files"}
           </h2>
           <Button
             size="sm"
@@ -34,9 +38,9 @@ export function BaseAudioUpload() {
           </Button>
         </div>
 
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {mediaUploads.map((item) => (
-            <BaseAudioUploadCard key={item.id} {...item} />
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {audioUploads.map((item) => (
+            <LayoutAudioUploadCard key={item.id} {...item} />
           ))}
         </div>
       </div>
@@ -47,11 +51,11 @@ export function BaseAudioUpload() {
     <div className="space-y-6">
       <div className="space-y-0.5">
         <h2 className="font-serif text-3xl font-semibold">
-          Upload base audio folders
+          Upload layout audio files
         </h2>
         <p className="text-sm text-muted-foreground">
-          Drag and drop up to {MAX_FOLDERS} folders. Each folder must contain
-          exactly one audio and one video file.
+          Drag and drop up to {MAX_LAYOUT_AUDIO_FILES} audio files. Supported
+          formats: MP3, WAV, OGG, M4A.
         </p>
       </div>
 
@@ -68,11 +72,10 @@ export function BaseAudioUpload() {
         <UploadIcon />
         <div className="flex flex-col items-center gap-2 text-center">
           <p className="font-medium text-foreground">
-            Drag and drop folders here
+            Drag and drop audio files here
           </p>
           <p className="text-sm text-muted-foreground">
-            Tip: Select multiple folders from your file explorer and drop them
-            together.
+            Or click to select files from your computer.
           </p>
         </div>
       </div>

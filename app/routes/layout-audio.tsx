@@ -1,29 +1,29 @@
 import { useEffect } from "react"
-import { BaseAudioCard } from "@/components/base-audio-card"
+import { LayoutAudioCard } from "@/components/layout-audio-card"
 import { Card, CardContent } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
-import { useBaseAudioFilesQuery } from "@/queries/use-base-audio-files-query"
-import { useBaseAudioStore } from "@/stores/use-base-audio-store"
-import type { Route } from "./+types/base-audio"
+import { useLayoutAudioFilesQuery } from "@/queries/use-layout-audio-files-query"
+import { useLayoutAudioStore } from "@/stores/use-layout-audio-store"
+import type { Route } from "./+types/layout-audio"
 import { Button } from "@/components/ui/button"
 import { Link } from "react-router"
 import {
   AlertCircleIcon,
-  ListMusicIcon,
+  Volume2Icon,
   PlusIcon,
   RefreshCcwIcon
 } from "lucide-react"
 
 export function meta(_: Route.MetaArgs) {
   return [
-    { title: "Wonderland Admin" },
-    { name: "description", content: "Manage your Wonderland Base Audio" }
+    { title: "Layout Audio - Wonderland Admin" },
+    { name: "description", content: "Manage your Wonderland Layout Audio" }
   ]
 }
 
-export default function BaseAudio() {
-  const { files, isLoading, error, refetch } = useBaseAudioFilesQuery()
-  const { playingId, pause, cleanup } = useBaseAudioStore()
+export default function LayoutAudio() {
+  const { files, isLoading, error, refetch } = useLayoutAudioFilesQuery()
+  const { playingId, pause, cleanup } = useLayoutAudioStore()
 
   // If the currently playing item is deleted, reset playingId
   useEffect(() => {
@@ -42,15 +42,19 @@ export default function BaseAudio() {
     return (
       <div className="space-y-6">
         <PageHeader />
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {Array.from({ length: 12 }).map((_, i) => (
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {Array.from({ length: 9 }).map((_, i) => (
             <Card key={i} className="overflow-hidden py-0">
-              <CardContent className="p-0">
-                <Skeleton className="aspect-video w-full rounded-none" />
-                <div className="p-3">
-                  <div className="flex h-8 shrink-0 items-center">
-                    <Skeleton className="h-6 w-32" />
+              <CardContent className="p-4">
+                <div className="mb-4 flex items-center gap-4">
+                  <Skeleton className="aspect-square size-9 shrink-0" />
+                  <div className="min-w-0 flex-1 space-y-2">
+                    <Skeleton className="h-2.5 w-full rounded" />
+                    <Skeleton className="h-4 w-full rounded" />
                   </div>
+                </div>
+                <div className="flex h-8 items-end">
+                  <Skeleton className="h-6 w-full max-w-2/3 rounded" />
                 </div>
               </CardContent>
             </Card>
@@ -69,7 +73,7 @@ export default function BaseAudio() {
         </div>
         <div className="mb-4 flex flex-col items-center justify-center space-y-0.5 text-center">
           <h2 className="font-serif text-2xl font-semibold">
-            Failed to load base audio files
+            Failed to load layout audio files
           </h2>
           <p className="text-sm text-muted-foreground">
             There was an error loading your files. Please try again.
@@ -88,20 +92,20 @@ export default function BaseAudio() {
     return (
       <div className="flex h-full flex-col items-center justify-center text-center">
         <div className="mb-2 size-10 shrink-0 rounded-full bg-muted p-2">
-          <ListMusicIcon className="size-6" />
+          <Volume2Icon className="size-6" />
         </div>
         <div className="mb-4 flex flex-col items-center justify-center space-y-0.5 text-center">
           <h2 className="font-serif text-2xl font-semibold">
-            No base audio files
+            No layout audio files
           </h2>
           <p className="text-sm text-muted-foreground">
-            Get started by creating your first base audio file
+            Get started by creating your first layout audio file
           </p>
         </div>
         <Button asChild className="h-9">
-          <Link to="/create-base-audio">
+          <Link to="/create-layout-audio">
             <PlusIcon />
-            Create Base Audio
+            Create Layout Audio
           </Link>
         </Button>
       </div>
@@ -111,9 +115,9 @@ export default function BaseAudio() {
   return (
     <div className="space-y-6">
       <PageHeader />
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {files.map((file) => (
-          <BaseAudioCard key={file.id} {...file} />
+          <LayoutAudioCard key={file.id} {...file} />
         ))}
       </div>
     </div>
@@ -123,11 +127,11 @@ export default function BaseAudio() {
 function PageHeader() {
   return (
     <div className="flex items-center justify-between">
-      <h2 className="font-serif text-3xl font-semibold">Base Audio</h2>
+      <h2 className="font-serif text-3xl font-semibold">Layout Audio</h2>
       <Button size="sm" asChild>
-        <Link to="/create-base-audio">
+        <Link to="/create-layout-audio">
           <PlusIcon />
-          New Base Audio
+          New Layout Audio
         </Link>
       </Button>
     </div>

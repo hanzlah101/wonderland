@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { db } from "@/lib/firebase"
 import { getErrorMessage } from "@/lib/firebase-errors"
-import { DB_PATH } from "@/lib/constants"
+import { LAYOUT_DB_PATH } from "@/lib/constants"
 import {
   query,
   orderByChild,
@@ -16,12 +16,22 @@ import {
 } from "firebase/database"
 
 async function isTitleTaken(title: string) {
-  const q = query(dbRef(db, DB_PATH), orderByChild("title"), equalTo(title))
+  const q = query(
+    dbRef(db, LAYOUT_DB_PATH),
+    orderByChild("title"),
+    equalTo(title)
+  )
   const snapshot = await get(q)
   return snapshot.exists()
 }
 
-export function ChangeTitle({ id, title }: { id: string; title: string }) {
+export function ChangeLayoutAudioTitle({
+  id,
+  title
+}: {
+  id: string
+  title: string
+}) {
   const [isEditing, setIsEditing] = useState(false)
   const [value, setValue] = useState(title)
   const [isSaving, setIsSaving] = useState(false)
@@ -62,7 +72,7 @@ export function ChangeTitle({ id, title }: { id: string; title: string }) {
         return
       }
 
-      await update(dbRef(db, `${DB_PATH}/${id}`), { title: newTitle })
+      await update(dbRef(db, `${LAYOUT_DB_PATH}/${id}`), { title: newTitle })
       toast.success("Title updated")
       setIsEditing(false)
     } catch (err) {

@@ -46,15 +46,19 @@ export function AppSidebar() {
         </SidebarGroup>
 
         <SidebarGroup>
-          <SidebarGroupLabel>Layer Audio</SidebarGroupLabel>
+          <SidebarGroupLabel>Layout Audio</SidebarGroupLabel>
 
           <SidebarGroupContent>
             <SidebarMenu>
-              <Item icon={Disc3Icon} label="Layer Audio" href="/layer-audio" />
+              <Item
+                icon={Disc3Icon}
+                label="Layout Audio"
+                href="/layout-audio"
+              />
               <Item
                 icon={CircleFadingPlusIcon}
-                label="Create Layer Audio"
-                href="/create-layer-audio"
+                label="Create Layout Audio"
+                href="/create-layout-audio"
               />
             </SidebarMenu>
           </SidebarGroupContent>

@@ -13,7 +13,7 @@ type UploadItemCardProps = {
   error?: string | null
 }
 
-export function UploadItemCard({
+export function BaseAudioUploadCard({
   folder,
   posterUrl,
   progress,
